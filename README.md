@@ -1,7 +1,7 @@
 # ZumaChatBot
 Zakaria Kara
 
-<img width="770" height="564" alt="Image" src="https://github.com/user-attachments/assets/f6ec2f30-6516-4130-8901-37d69c67e484" />
+<img width="813" height="758" alt="Image" src="https://github.com/user-attachments/assets/bd77a903-6b34-47af-996c-8451327ca8fe" />
 
 ## Setup 
 
