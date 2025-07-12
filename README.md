@@ -1,6 +1,27 @@
 # ZumaChatBot
 ## Zakaria Kara
 
+## Setup 
+
+### DB init and Seed
+> npx ts-node ZumaChatBot/server/src/database/init.ts && npx ts-node ZumaChatBot/server/src/database/seed.ts
+
+### Run unit tests
+> npx ts-node ZumaChatBot/server/src/tools/mock-tool-test.ts
+
+### Limitations
+1. Current message has no knowledge of past messages sent to bot
+2. Can only check price by unit not type of unit
+3. Some words aren't translated well for example: one bedroom !== 1br
+4. Raw queries in services
+
+### TODO
+1. Abstract queries to Command/Query patterns
+2. Not all data being passed is typed
+3. Naming inconsistencies
+4. Bloat - lot of endpoints not being used
+5. Lot of open ended logic, actions are properly handled in their own services.
+
 A modern AI-powered chatbot built with React TypeScript frontend and Express.js backend.
 
 ## Features
@@ -160,24 +181,3 @@ The app uses modern CSS with glassmorphism effects. Main styles are in:
 1. Build the React app: `cd client && npm run build`
 2. Deploy the `build/` folder to your hosting platform
 3. Update the API endpoint in the frontend if needed
-
-## Setup 
-
-### DB init and Seed
-> npx ts-node ZumaChatBot/server/src/database/init.ts && npx ts-node ZumaChatBot/server/src/database/seed.ts
-
-### Run unit tests
-> npx ts-node ZumaChatBot/server/src/tools/mock-tool-test.ts
-
-### Limitations
-1. Current message has no knowledge of past messages sent to bot
-2. Can only check price by unit not type of unit
-3. Some words aren't translated well for example: one bedroom !== 1br
-4. Raw queries in services
-
-### TODO
-1. Abstract queries to Command/Query patterns
-2. Not all data being passed is typed
-3. Naming inconsistencies
-4. Bloat - lot of endpoints not being used
-5. Lot of open ended logic, actions are properly handled in their own services.
