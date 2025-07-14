@@ -27,18 +27,23 @@ export class Orchestrator {
     const toolNames = await this.classifier.classifyAll(userInput);
     console.log('toolNames', toolNames);
     if (!toolNames.length) {
-      return { success: false, message: 'No tools found for this request.' };
+      return { success: false, message: 'Sorry I cant help with that.' };
     }
     let results = [];
 
     for (const [i, toolNameAndInput] of toolNames.entries()) {
-      const [toolName, inputData] = toolNameAndInput.split('|');
-      const tool = toolRegistry[toolName.trim()];
-      if (!tool) {
-        results.push({ success: false, message: `No tool found for: ${toolName}` });
+      const [toolName, confidenceCoefficient] = toolNameAndInput.split('|');
+      if (Number(confidenceCoefficient) < .7) {
+        console.log('Confidence coefficient too low for: ', toolName);
         continue;
       }
-      const result = await tool.execute({context: inputData});
+      const tool = toolRegistry[toolName.trim()];
+      if (!tool) {
+        console.log('No tool found for: ', toolName);
+        //results.push({ success: false, message: `No tool found for: ${toolName}` });
+        continue;
+      }
+      const result = await tool.execute({context: userInput});
       results.push({ tool: toolName, ...result });
     }
     return { success: true, results };

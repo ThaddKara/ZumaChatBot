@@ -1,6 +1,7 @@
 import { ToolBase, ToolInput, ToolResult } from './ToolBase';
 import db from '../database/db';
 import { GetPricingClassifier } from '../orchestration/tools/GetPricingClassifier';
+import { Room } from '@/models/Room';
 
 export class GetPricing extends ToolBase {
   name = 'get_pricing';
@@ -15,29 +16,35 @@ export class GetPricing extends ToolBase {
   async execute(input: ToolInput): Promise<ToolResult> {
     // Use classifier to determine unitId and moveInDate if not provided
     let roomId = input.room_id;
-    let date = input.date;
-    if ((!roomId || !date) && input.context) {
+    if (!roomId) {
       const context = await this.classifier.classifyPricingContext(input.context);
-      if (!roomId && context.unitId) roomId = context.unitId;
-      if (!date && context.moveInDate) date = context.moveInDate;
+      roomId = context;
     }
 
     // Lookup room
-    let room: any;
-    room = db.prepare('SELECT * FROM room WHERE name = ?').get(roomId);
-    
-    if (!room) {
-      return {
-        success: false,
-        data: {},
-        message: 'Which room do you want pricing for?',
-        action: 'ask_clarification',
-      };
+    let roomType = db.prepare('SELECT * FROM room WHERE type = ? AND available = 1').get(roomId) as Room;    
+    if (!roomType) {
+      let room = db.prepare('SELECT * FROM room WHERE name = ? AND available = 1').get(roomId) as Room;
+      if (room) {
+        return {
+          success: true,
+          data: { price: room.price, currency: 'USD', room: room, input },
+          message: `The price for unit ${room.name} is $${room.price}. Would you like to schedule a tour for this unit?`,
+          action: 'none',
+        };
+      } else {
+        return {
+          success: false,
+          data: {},
+          message: 'Which room do you want pricing for?',
+          action: 'ask_clarification',
+        };
+      }
     }
     return {
       success: true,
-      data: { price: room.price, currency: 'USD', room, input, date },
-      message: `The price for ${room.name} is $${room.price}.`,
+      data: { price: roomType.price, currency: 'USD', room: roomType, input },
+      message: `I found a ${roomType.type} (unit ${roomType.name}) that is $${roomType.price}. Would you like to schedule a tour for this unit?`,
       action: 'none',
     };
   }

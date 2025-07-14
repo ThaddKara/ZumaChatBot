@@ -1,10 +1,5 @@
 import OpenAI from 'openai';
 
-export interface PricingContext {
-  unitId: string | null;
-  moveInDate: string | null;
-}
-
 export class GetPricingClassifier {
   private openai: OpenAI;
 
@@ -12,25 +7,24 @@ export class GetPricingClassifier {
     this.openai = new OpenAI({ apiKey });
   }
 
-  async classifyPricingContext(userInput: string): Promise<PricingContext> {
-    const prompt = `Extract the unit id and move-in date from the following user request.\nRequest: "${userInput}"\nRespond in the format: unitId: <unitId or none>, moveInDate: <moveInDate or none>.`;
+  async classifyPricingContext(userInput: string): Promise<string> {
+    const prompt = `Classify the following user request. If the user specifies a specific unit or room, return only the unit number (e.g., 101, 202). Otherwise, classify the request as one of: studio, 1 bedroom, 2 bedroom, or any.\nRequest: "${userInput}"\nResponse:`;
     try {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 30,
+        max_tokens: 5,
         temperature: 0,
       });
-      const content = completion.choices[0].message.content?.trim().toLowerCase() || '';
-      const unitIdMatch = content.match(/unitid:\s*([\w-]+)/);
-      const moveInDateMatch = content.match(/moveindate:\s*([\w-]+)/);
-      return {
-        unitId: unitIdMatch ? unitIdMatch[1] : null,
-        moveInDate: moveInDateMatch ? moveInDateMatch[1] : null
-      };
+      const content = completion.choices[0].message.content?.trim().toLowerCase();
+      if (content?.includes('studio')) return 'studio';
+      if (content?.includes('1br') || content?.includes('one') || content?.includes('1 bedroom')) return '1br';
+      if (content?.includes('2br') || content?.includes('two') || content?.includes('2 bedroom')) return '2br';
+      if (content?.includes('any')) return 'any';
+      return content || 'any';
     } catch (error) {
-      console.error('GetPricingClassifier error:', error);
-      return { unitId: null, moveInDate: null };
+      console.error('CheckAvailabilityClassifier error:', error);
+      return 'any';
     }
   }
 } 

@@ -1,6 +1,7 @@
 import { ToolBase, ToolInput, ToolResult } from './ToolBase';
 import db from '../database/db';
 import { CheckAvailabilityClassifier } from '../orchestration/tools/CheckAvailabilityClassifier';
+import { Room } from '@/models/Room';
 
 export class CheckingAvailability extends ToolBase {
   name = 'checking_availability';
@@ -18,9 +19,24 @@ export class CheckingAvailability extends ToolBase {
     if (!roomType && input.context) {
       roomType = await this.classifier.classifyBedrooms(input.context);
     }
+    console.log('roomType', roomType);
+
+    if (roomType === 'any') {
+      const rooms = db.prepare('SELECT * FROM room WHERE available = 1').all() as Room[];
+      return {
+        success: false,
+        data: {},
+        message: `Yes! here are the rooms available: ${rooms.map(r => ` (unit ${r.name})`).join('\n')}\n\nWould you like to schedule a tour for any of these rooms?`,
+        action: 'handoff_human',
+      };
+    }
     // Lookup room by name, id, or type
     let room: any;
-    room = db.prepare('SELECT * FROM room WHERE type = ?').get(roomType)
+    room = db.prepare('SELECT * FROM room WHERE type = ? AND available = 1').get(roomType)
+    if (!room) {
+      room = db.prepare('SELECT * FROM room WHERE name = ? AND available = 1').get(roomType);
+    }
+    console.log('room', room);
     
     if (!room) {
       return {
@@ -41,7 +57,7 @@ export class CheckingAvailability extends ToolBase {
     return {
       success: true,
       data: { available: true, room, date: input.date },
-      message: `Yes! A ${roomType} is available, would you like to schedule a tour for ${room.name}?`,
+      message: `Yes! A ${room.type} is available, would you like to schedule a tour for ${room.name}?`,
       action: 'propose_tour',
     };
   }

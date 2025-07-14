@@ -109,7 +109,7 @@ const seedData = db.transaction(() => {
 
   const rooms = [
     { id: 1, name: '101', type: 'studio', available: true, price: 1200 },
-    { id: 2, name: '102', type: '1br', available: false, price: 1500 },
+    { id: 2, name: '102', type: '1br', available: true, price: 1500 },
     { id: 3, name: '201', type: '2br', available: true, price: 2000 },
     { id: 4, name: '202', type: 'studio', available: true, price: 1250 }
   ];
