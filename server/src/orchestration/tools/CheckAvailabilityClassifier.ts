@@ -8,7 +8,7 @@ export class CheckAvailabilityClassifier {
   }
 
   async classifyBedrooms(userInput: string): Promise<'studio' | '1br' | '2br' | 'any' | string> {
-    const prompt = `Classify the following user request. If the user specifies a specific unit or room, return only the unit number (e.g., 101, 202). Otherwise, classify the request as one of: studio, 1 bedroom, 2 bedroom, or any.\nRequest: "${userInput}"\nResponse:`;
+    const prompt = `Classify the following user request. If the user specifies a specific unit or room, return only the unit number and nothing else (e.g., 101, 202). Otherwise, classify the request as one of: studio, 1 bedroom, 2 bedroom, or any.\nRequest: "${userInput}"\nResponse:`;
     try {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',

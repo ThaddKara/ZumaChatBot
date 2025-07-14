@@ -33,7 +33,7 @@ export class Orchestrator {
 
     for (const [i, toolNameAndInput] of toolNames.entries()) {
       const [toolName, confidenceCoefficient] = toolNameAndInput.split('|');
-      if (Number(confidenceCoefficient) < .7) {
+      if (Number(confidenceCoefficient) <= .7) {
         console.log('Confidence coefficient too low for: ', toolName);
         continue;
       }

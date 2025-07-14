@@ -19,7 +19,6 @@ export class CheckingAvailability extends ToolBase {
     if (!roomType && input.context) {
       roomType = await this.classifier.classifyBedrooms(input.context);
     }
-    console.log('roomType', roomType);
 
     if (roomType === 'any') {
       const rooms = db.prepare('SELECT * FROM room WHERE available = 1').all() as Room[];
@@ -33,32 +32,30 @@ export class CheckingAvailability extends ToolBase {
     // Lookup room by name, id, or type
     let room: any;
     room = db.prepare('SELECT * FROM room WHERE type = ? AND available = 1').get(roomType)
-    if (!room) {
-      room = db.prepare('SELECT * FROM room WHERE name = ? AND available = 1').get(roomType);
-    }
-    console.log('room', room);
-    
-    if (!room) {
+    if (room) {
       return {
-        success: false,
-        data: {},
-        message: 'No matching room found.',
-        action: 'handoff_human',
+        success: true,
+        data: { available: true, room, date: input.date },
+        message: `Yes! A ${room.type} is available, would you like to schedule a tour for unit ${room.name}?`,
+        action: 'propose_tour',
       };
     }
-    if (!room.available) {
+
+    room = db.prepare('SELECT * FROM room WHERE name = ? AND available = 1').get(roomType);
+    if (room) {
       return {
-        success: false,
-        data: { available: false, room },
-        message: 'No vacancies available.',
-        action: 'handoff_human',
+        success: true,
+        data: { available: true, room, date: input.date },
+        message: `Yes! unit ${room.name} is available, would you like to schedule a tour?`,
+        action: 'propose_tour',
       };
     }
+
     return {
-      success: true,
-      data: { available: true, room, date: input.date },
-      message: `Yes! A ${room.type} is available, would you like to schedule a tour for ${room.name}?`,
-      action: 'propose_tour',
+      success: false,
+      data: {},
+      message: 'No matching room found.',
+      action: 'handoff_human',
     };
   }
 } 
